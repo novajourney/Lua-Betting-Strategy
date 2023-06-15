@@ -24,8 +24,18 @@ layer11v = {}
 layer11b = {}
 layer12v = {}
 layer12b = {}
-xValues = {40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 420, 560, 600, 640, 680, 720}
-canvWidth = 800
+layer13v = {}
+layer13b = {}
+layer14v = {}
+layer14b = {}
+layer15v = {}
+layer15b = {}
+layer16v = {}
+layer16b = {}
+layer17v = {}
+layer17b = {}
+xValues = {40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520, 560, 600, 640, 680}
+canvWidth = 680
 canvHeight = 544
 calculateOnce = false
 
@@ -39,28 +49,23 @@ end
 function love.draw()
 
     function calculateX(curLayer, xValues)
-        value = xValues[curLayer]
-        return value
+        return xValues[curLayer]
     end
 
     function calculateWV(prevLayerV, prevLayerB, nodeNumber)
-        value = prevLayerV[nodeNumber] + prevLayerB[nodeNumber]
-        return value
+        return prevLayerV[nodeNumber] + prevLayerB[nodeNumber]
     end
 
-    function calculateLV(prevLayerV, prevLayerB, nodeNumber)
-        value = prevLayerV[nodeNumber] - prevLayerB[nodeNumber]
-        return value
+    function calculateLV(prevLayerV, prevLayerB, nodeNumber) 
+        return prevLayerV[nodeNumber] - prevLayerB[nodeNumber]
     end
 
     function calculateWB()
-        value = 1
-        return value
+        return 1
     end
 
     function calculateLB(prevLayerB, nodeNumber)
-        value = prevLayerB[nodeNumber] * 2
-        return value
+        return prevLayerB[nodeNumber] * 2
     end
 
     function addToTable(curLayerV, curLayerB, prevLayerV, prevLayerB, nodeNumber)
@@ -77,18 +82,52 @@ function love.draw()
         love.graphics.line(prevLayerX, ((prevLayerV[nodeNumber] - 32) * -1), curLayerX, ((calculateLV(prevLayerV, prevLayerB, nodeNumber) - 32) * -1))
     end
 
-    function createLayer(curLayerV, curLayerB, prevLayerV, prevLayerB, curLayer, xValues, calculateOnce)
-
-        if calculateOnce == false then
-            display = ""
-            print("Current Layer: " .. tostring((curLayer) - 1))
+    function countValues(searchValue, reqLayer)
+        count = 0
+        for i = 1, #reqLayer do
+            if reqLayer[i] == searchValue then
+                count = count + 1
+            end
         end
+        return count
+    end
+    
+    function addToReturnList(searchValue, reqLayer)
+        count = countValues(searchValue, reqLayer)
+        return tostring(searchValue) .. " - " .. tostring(count) .. " : " .. tostring((count / #reqLayer) * 100) .. "%"
+    end
+    
+    function searchList(list, searchValue)
+        for i = 1, #list do
+            if searchValue == list[i] then
+                return false
+            end
+        end
+        return true
+    end
+
+    function printList(list)
+
+        for i = 1, #list do
+            print(list[i])
+        end
+    
+    end
+
+    function addTable(table)
+        value = 0
+        for i = 1, #table do
+            value = table[i] + value
+        end
+        return value
+    end
+
+    function createLayer(curLayerV, curLayerB, prevLayerV, prevLayerB, curLayer, xValues, calculateOnce)
 
         for nodeNumber = 1, #prevLayerV do
 
             if  calculateOnce == false then
                 addToTable(curLayerV, curLayerB, prevLayerV, prevLayerB, nodeNumber)
-                display = display .. tostring(prevLayerV[nodeNumber]) .. ", "
             end
 
             drawLine(curLayerV, curLayerB, calculateX(curLayer, xValues), prevLayerV, prevLayerB, (calculateX(curLayer, xValues) - 40), nodeNumber)
@@ -96,7 +135,52 @@ function love.draw()
         end
 
         if calculateOnce == false then
-            print(display)
+
+            print("Current Layer: " .. tostring((curLayer) - 1))
+
+            initialList = {}
+            returnList = {}
+            
+            for i = 1, #prevLayerV do
+                if i == 1 then
+                    table.insert(initialList, prevLayerV[i])
+                else
+                    if searchList(initialList, prevLayerV[i]) then
+                        table.insert(initialList, prevLayerV[i])
+                    end
+                end
+            end
+
+            table.sort(initialList) --Why didn't i know about this! Everything would've been so much easier!
+
+
+            
+            for i = 1, #initialList do
+                table.insert(returnList, addToReturnList(initialList[i], prevLayerV))
+            end
+
+            printList(returnList)
+
+            negativePercentage = nil
+            negativeCount = 0
+
+            for i = 1, #prevLayerV do
+
+                if prevLayerV[i] < 0 then
+                    negativeCount = negativeCount + 1
+                end
+
+                negativePercentage = negativeCount / #prevLayerV
+
+            end
+
+            print("Negative percentage: " .. tostring(negativePercentage) .. "%" .. " (" .. tostring(negativeCount) .. "/" .. tostring(#prevLayerV) .. ")")
+            print("Expected Value: " .. tostring(addTable(prevLayerV)))
+            
+            print("~") --Just to provide some seperation to make it easier to read.
+            print("~")
+            print("~")
+
         end
         
     end
@@ -113,7 +197,20 @@ function love.draw()
     createLayer(layer10v, layer10b, layer9v, layer9b, 10, xValues, calculateOnce)
     createLayer(layer11v, layer11b, layer10v, layer10b, 11, xValues, calculateOnce)
     createLayer(layer12v, layer12b, layer11v, layer11b, 12, xValues, calculateOnce)
+    createLayer(layer13v, layer13b, layer12v, layer12b, 13, xValues, calculateOnce)
+    createLayer(layer14v, layer14b, layer13v, layer13b, 14, xValues, calculateOnce)
+    createLayer(layer15v, layer15b, layer14v, layer14b, 15, xValues, calculateOnce)
+    createLayer(layer16v, layer16b, layer15v, layer15b, 16, xValues, calculateOnce)
+    createLayer(layer17v, layer17b, layer16v, layer16b, 17, xValues, calculateOnce)
+
+    love.graphics.setColor(0, 1, 0)
+    love.graphics.line(0, 32, 800, 32)
+
+    love.graphics.setColor(0, 0, 0, .125)
+    for i = 1, #xValues do
+        love.graphics.line(xValues[i], 0, xValues[i], canvHeight)
+    end
 
     calculateOnce = true
-    
+
 end
